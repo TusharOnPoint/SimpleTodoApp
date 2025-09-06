@@ -16,10 +16,11 @@ public class TaskService {
 
     // create task
     public Task createTask(Task task) {
-        task.setId(currentId++);
+        task.setId(currentId);
         if(task.getStatus()==null || task.getStatus().isEmpty())
             task.setStatus("To Do");
         taskRepo.put(currentId, task);
+        currentId++;
         return task;
     }
 
@@ -38,11 +39,20 @@ public class TaskService {
     public Task updateTask(Long id, Task upTask){
         Task task = taskRepo.get(id);
         if(task!=null){
-            task.setTitle(upTask.getTitle());
-            task.setDiscription(upTask.getDiscription());
-            task.setStatus(upTask.getStatus());
+            if(upTask.getTitle()!=null && !upTask.getTitle().isEmpty())
+                task.setTitle(upTask.getTitle());
+            if(upTask.getDescription()!=null && !upTask.getDescription().isEmpty())
+                task.setDescription(upTask.getDescription());
+            if(upTask.getStatus()!=null && !upTask.getStatus().isEmpty())
+                task.setStatus(upTask.getStatus());
             return task;
         }
         return null;
     }
+
+    // delete task
+    public boolean deleteTask(Long id){
+        return taskRepo.remove(id) != null;
+    }
+
 }

@@ -1,7 +1,5 @@
 package com.tushar.simple_task_manager_crud_app.controller;
 
-import org.springframework.web.bind.annotation.RestController;
-
 import com.tushar.simple_task_manager_crud_app.model.Task;
 import com.tushar.simple_task_manager_crud_app.service.TaskService;
 
@@ -9,49 +7,61 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
-
-
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
 public class TaskController {
-    private final TaskService taskService;
 
-    @PostMapping("/create")
+    private final TaskService taskService;
+    private static final Logger logger = LoggerFactory.getLogger(TaskController.class);
+
+    @PostMapping("/new")
     public ResponseEntity<Task> createTask(@RequestBody Task task) {
+        logger.info("Creating new task: {}", task);
         return ResponseEntity.ok(taskService.createTask(task));
     }
 
-    @GetMapping("/getall")
-    public ResponseEntity<List<Task>> getAllTask(@RequestBody String entity) {
+    @GetMapping("/all")
+    public ResponseEntity<List<Task>> getAllTask() {
+        logger.info("Fetching all tasks");
         return ResponseEntity.ok(taskService.getAllTask());
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
-        return ResponseEntity.ok(taskService.getTask(id));
+        logger.info("Fetching task with ID: {}", id);
+        Task task = taskService.getTask(id);
+        if(task!=null)
+            return ResponseEntity.ok(task);
+        else
+            return ResponseEntity.notFound().build();
     }
     
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
-        return ResponseEntity.ok(taskService.updateTask(id, task));
+        logger.info("Updating task with ID: {}", id);
+        Task upTask = taskService.updateTask(id, task);
+        if(upTask!=null)
+            return ResponseEntity.ok(upTask);
+        else
+            return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        return taskService.deleteTask(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        logger.info("Deleting task with ID: {}", id);
+        boolean deleted = taskService.deleteTask(id);
+        if (deleted) {
+            logger.info("Successfully deleted task with ID: {}", id);
+            return ResponseEntity.noContent().build();
+        } else {
+            logger.warn("Task with ID: {} not found for deletion", id);
+            return ResponseEntity.notFound().build();
+        }
     }
 }
